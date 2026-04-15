@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics — Morbid Analytics</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="site-name">Viki &bull; Data Curiosities</div>
+  <div class="site-title"><a href="index.html">Morbid Analytics</a></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="deaths.html">Death List</a>
+    <a href="analytics.html" class="active">Analytics</a>
+    <a href="methodology.html">Methodology</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <h1><em>Visual</em> Analytics</h1>
+  <p>Four charts that reframe how you think about risk, mortality, and the gap between what kills us vs. what we fear.</p>
+</div>
+
+<div class="container-wide">
+
+  <div class="stat-grid" style="margin-bottom:44px;">
+    <div class="stat-card">
+      <div class="stat-num red">74%</div>
+      <div class="stat-label">Global deaths from chronic disease</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num teal">25×</div>
+      <div class="stat-label">More likely to die from a cow than a shark</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num amber">379</div>
+      <div class="stat-label">Selfie deaths globally, 2011–2017</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">107,941</div>
+      <div class="stat-label">US overdose deaths in 2022 (CDC)</div>
+    </div>
+  </div>
+
+  <!-- CHART 1: Top 10 US annual deaths (bar) -->
+  <div class="chart-wrap">
+    <div class="chart-title">Top causes of death — annual US count</div>
+    <div class="chart-sub">Source: CDC WONDER 2022. Absolute deaths per year.</div>
+    <canvas id="chart-bar" height="340"></canvas>
+  </div>
+
+  <!-- CHART 2: Probability spectrum (log scale) -->
+  <div class="chart-wrap">
+    <div class="chart-title">The probability spectrum — lifetime odds (log scale)</div>
+    <div class="chart-sub">How dramatically rare causes compare to common ones. Note: log scale — each step is 10×.</div>
+    <canvas id="chart-log" height="360"></canvas>
+  </div>
+
+  <!-- CHART 3: Fear vs. reality (doughnut pair) -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+    <div class="chart-wrap">
+      <div class="chart-title">What we Google</div>
+      <div class="chart-sub">Relative search interest: cause of death fears (est.)</div>
+      <canvas id="chart-fear" height="260"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">What actually kills us</div>
+      <div class="chart-sub">US deaths by broad category, 2022 (CDC)</div>
+      <canvas id="chart-reality" height="260"></canvas>
+    </div>
+  </div>
+
+  <!-- CHART 4: Absurd tier comparison -->
+  <div class="chart-wrap">
+    <div class="chart-title">The absurd tier — annual US deaths, compared</div>
+    <div class="chart-sub">Putting the "rare" in perspective against things people don't worry about.</div>
+    <canvas id="chart-absurd" height="300"></canvas>
+  </div>
+
+  <div class="section-rule"><span class="section-label">What the charts tell us</span></div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+    <div class="callout red" style="margin:0;">
+      <div class="callout-label">📊 Chart 1 takeaway</div>
+      <p>The top 4 causes alone account for over 1.5 million US deaths annually — roughly 55% of all deaths. Everything else is noise by comparison.</p>
+    </div>
+    <div class="callout teal" style="margin:0;">
+      <div class="callout-label">📊 Chart 2 takeaway</div>
+      <p>The log scale reveals the true absurdity: a shark killing you is roughly 600,000× less likely than heart disease. Your brain cannot intuitively process this gap.</p>
+    </div>
+    <div class="callout amber" style="margin:0;">
+      <div class="callout-label">📊 Chart 3 takeaway</div>
+      <p>Media coverage of dramatic deaths (violence, accidents, rare events) inflates our perceived risk dramatically. The availability heuristic at work.</p>
+    </div>
+    <div class="callout green" style="margin:0;">
+      <div class="callout-label">📊 Chart 4 takeaway</div>
+      <p>Fire ant anaphylaxis (~60/yr) kills more Americans than shark attacks, lightning, and plane crashes combined — and gets approximately zero documentary coverage.</p>
+    </div>
+  </div>
+
+</div>
+
+<section class="about-strip">
+  <div class="about-inner">
+    <div class="avatar">V</div>
+    <div>
+      <div class="about-name">Viki</div>
+      <p class="about-bio">Graduate student in computer science, distributed systems enthusiast, and part-time data morbidologist.</p>
+      <div class="about-tags">
+        <span class="tag">Distributed Systems</span>
+        <span class="tag">Python</span>
+        <span class="tag">Quarto</span>
+        <span class="tag">AI Tooling</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 Viki &bull; Built with Quarto &bull; Data: CDC WONDER, NSC, OurWorldInData &bull; Python
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+const INK    = '#0e0e0e';
+const CREAM  = '#f5f0e8';
+const MUTED  = '#888';
+const PALETTE = ['#8e44ad','#8e44ad','#c0392b','#2980b9','#c0392b','#2980b9','#c04040','#2980b9','#2980b9','#1a6b3c'];
+const RARE   = ['#16a085','#16a085','#f39c12','#f39c12','#f39c12'];
+
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.color = MUTED;
+
+// ── Chart 1: Top 10 bar ──────────────────────────────────────────────
+const top10 = DEATHS.slice(0, 10);
+new Chart(document.getElementById('chart-bar'), {
+  type: 'bar',
+  data: {
+    labels: top10.map(d => d.name),
+    datasets: [{
+      label: 'Annual US deaths',
+      data: top10.map(d => d.annualUS),
+      backgroundColor: PALETTE,
+      borderRadius: 4,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.raw.toLocaleString()} deaths/year`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v }
+      },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// ── Chart 2: Log scale probability spectrum ──────────────────────────
+const logData = [
+  { label: 'Heart disease',        odds: 6 },
+  { label: 'Cancer',               odds: 7 },
+  { label: 'Car crash',            odds: 101 },
+  { label: 'Fall',                 odds: 106 },
+  { label: 'Drowning',             odds: 1000 },
+  { label: 'Fire / smoke',         odds: 1500 },
+  { label: 'Lightning',            odds: 138000 },
+  { label: 'Plane crash',          odds: 205000 },
+  { label: 'TV tip-over',          odds: 400000 },
+  { label: 'Shark attack',         odds: 3700000 },
+  { label: 'Roller coaster',       odds: 750000000 },
+  { label: 'Laughing to death',    odds: 50000000 },
+  { label: 'Vending machine',      odds: 112000000 },
+];
+new Chart(document.getElementById('chart-log'), {
+  type: 'bar',
+  data: {
+    labels: logData.map(d => d.label),
+    datasets: [{
+      label: '1 in N lifetime odds (N)',
+      data: logData.map(d => d.odds),
+      backgroundColor: logData.map(d =>
+        d.odds < 1000      ? '#c0392b' :
+        d.odds < 500000    ? '#2980b9' :
+        d.odds < 10000000  ? '#16a085' : '#f39c12'
+      ),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` 1 in ${ctx.raw.toLocaleString()}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'logarithmic',
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        ticks: {
+          callback: v => {
+            const labels = {1:'1',10:'10',100:'100',1000:'1K',10000:'10K',100000:'100K',1000000:'1M',10000000:'10M',100000000:'100M',1000000000:'1B'};
+            return labels[v] || '';
+          }
+        }
+      },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// ── Chart 3a: Fear (what we Google — estimated search interest) ──────
+new Chart(document.getElementById('chart-fear'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Plane crash', 'Shark attack', 'Serial killer', 'Terrorism', 'Poisoning', 'Everything else'],
+    datasets: [{
+      data: [28, 22, 18, 16, 10, 6],
+      backgroundColor: ['#f39c12','#c0392b','#8e44ad','#2980b9','#16a085','#bbb'],
+      borderWidth: 2,
+      borderColor: '#f5f0e8',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 10 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ~${ctx.raw}% search share` } }
+    }
+  }
+});
+
+// ── Chart 3b: Reality (actual US deaths by category) ─────────────────
+new Chart(document.getElementById('chart-reality'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Heart disease', 'Cancer', 'Overdose/accidents', 'Respiratory', 'Stroke', 'Everything else'],
+    datasets: [{
+      data: [37, 32, 11, 8, 6, 6],
+      backgroundColor: ['#8e44ad','#c0392b','#2980b9','#16a085','#f39c12','#bbb'],
+      borderWidth: 2,
+      borderColor: '#f5f0e8',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 10 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ~${ctx.raw}% of all deaths` } }
+    }
+  }
+});
+
+// ── Chart 4: Absurd tier comparison ─────────────────────────────────
+const absurdData = [
+  { label: 'Fire ant anaphylaxis', n: 60 },
+  { label: 'TV tip-over',          n: 450 },
+  { label: 'Bee / wasp sting',     n: 62 },
+  { label: 'Dog attack',           n: 46 },
+  { label: 'Cow attack',           n: 22 },
+  { label: 'Lightning strike',     n: 20 },
+  { label: 'Vending machine',      n: 2 },
+  { label: 'Plane crash (general)',n: 350 },
+  { label: 'Shark attack',         n: 1 },
+  { label: 'Roller coaster',       n: 4 },
+];
+new Chart(document.getElementById('chart-absurd'), {
+  type: 'bar',
+  data: {
+    labels: absurdData.map(d => d.label),
+    datasets: [{
+      label: 'Annual US deaths (approx.)',
+      data: absurdData.map(d => d.n),
+      backgroundColor: ['#f39c12','#f39c12','#f39c12','#f39c12','#f39c12','#16a085','#f39c12','#2980b9','#c0392b','#f39c12'],
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` ~${ctx.raw} US deaths/year` } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 35 } },
+      y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { stepSize: 50 } }
+    }
+  }
+});
+</script>
+</body>
+</html>

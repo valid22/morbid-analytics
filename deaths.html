@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Death List — Morbid Analytics</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="site-name">Viki &bull; Data Curiosities</div>
+  <div class="site-title"><a href="index.html">Morbid Analytics</a></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="deaths.html" class="active">Death List</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="methodology.html">Methodology</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <h1>The <em>Ranked</em> Death List</h1>
+  <p>20 causes of death, ordered by lifetime odds — from the statistically inevitable to the historically documented once.</p>
+</div>
+
+<div class="container">
+
+  <div class="callout red">
+    <div class="callout-label">⚠ Methodology note</div>
+    <p>Lifetime odds use the formula: <strong>odds = 1 / (annual_rate × life_expectancy)</strong> where life_expectancy = 77.5 years (US, 2024). Some rare causes use global estimates. All annual death counts are sourced — see the <a href="methodology.html" style="color:var(--red)">Methodology page</a> for full citations.</p>
+  </div>
+
+  <!-- FILTER CONTROLS -->
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin: 24px 0 8px;">
+    <button class="filter-btn active" data-cat="all">All</button>
+    <button class="filter-btn" data-cat="cat-chronic">Chronic disease</button>
+    <button class="filter-btn" data-cat="cat-accident">Accidents</button>
+    <button class="filter-btn" data-cat="cat-rare">Rare</button>
+    <button class="filter-btn" data-cat="cat-absurd">Absurd</button>
+  </div>
+
+  <style>
+    .filter-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid var(--rule);
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { background: var(--cream2); color: var(--ink); }
+    .filter-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .death-item.hidden { display: none; }
+  </style>
+
+  <div class="death-list" id="death-list"></div>
+
+  <div class="section-rule"><span class="section-label">The absurdity tier</span></div>
+  <h2 class="section-head">Hall of Improbable Exits</h2>
+  <p class="body">These are real, documented causes of death that are statistically negligible — which somehow makes them more compelling. Your survival instinct evolved to handle lions and falling rocks, not these.</p>
+
+  <div class="absurd-grid" id="absurd-grid"></div>
+
+  <div class="callout teal">
+    <div class="callout-label">🐢 Tortoise, 🤣 laughter &amp; 💨 gas — the classics</div>
+    <p><strong>The turtle:</strong> Aeschylus (~455 BC) allegedly had a tortoise dropped on his bald head by an eagle mistaking it for a rock. Zero verified modern repeats.<br><br>
+    <strong>Laughing:</strong> Genuinely documented. Alex Mitchell, a 50-year-old British farmer, laughed continuously for 25 minutes at a 1975 Goodies TV sketch and died of cardiac arrest. His widow later <em>thanked</em> the comedian. Chrysippus the philosopher reportedly laughed himself to death watching a donkey eat figs. The real medical term is <em>fatal gelastic syncope</em>.<br><br>
+    <strong>Passing gas:</strong> In 1994, a patient in Texas reportedly died when a surgical laser ignited intestinal methane during a colonoscopy. Officially classified as an accident. The real lesson: do not combine elective procedures with open flames.</p>
+  </div>
+
+  <div class="callout amber">
+    <div class="callout-label">💡 The key insight</div>
+    <p>If you want to meaningfully change your probability of dying early: <strong>stop smoking, exercise (carefully), eat real food, wear a seatbelt, and see a doctor</strong>. Worrying about shark attacks while ignoring all of the above is like checking the emergency exits while sitting in a burning building.</p>
+  </div>
+
+</div>
+
+<section class="about-strip">
+  <div class="about-inner">
+    <div class="avatar">V</div>
+    <div>
+      <div class="about-name">Viki</div>
+      <p class="about-bio">Graduate student in computer science, distributed systems enthusiast, and part-time data morbidologist.</p>
+      <div class="about-tags">
+        <span class="tag">Distributed Systems</span>
+        <span class="tag">Python</span>
+        <span class="tag">Quarto</span>
+        <span class="tag">AI Tooling</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 Viki &bull; Built with Quarto &bull; Data: CDC WONDER, NSC, OurWorldInData &bull; Python
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+// Render death list
+const list = document.getElementById('death-list');
+const descs = [
+  "The silent landlord. Collects its rent whether you noticed the lease or not.",
+  "Your own cells, gone rogue. The body's most dramatic betrayal.",
+  "The 2020s contributed this permanent entry to the list.",
+  "America's most underdiscussed epidemic. Fentanyl rewrote the statistics.",
+  "Hurtling metal boxes at 70mph: surprisingly this causes deaths.",
+  "The silent killer of people over 65. Gravity has no mercy and no favorite age.",
+  "A uniquely American statistical category.",
+  "Dying doing what fitness influencers told you would save your life. ~7,000 out-of-hospital exercise cardiac arrests per year in the US (AHA). Your gym's defibrillator is not decorative.",
+  "Still claims thousands of Americans annually. Pools are statistically more dangerous than oceans.",
+  "House fires kill ~2,500 Americans a year. Smoke detectors with dead batteries are complicit.",
+  "Between 1978–1995, falling vending machines killed 37 people in the US — more than sharks in the same period. They were all trying to shake out a stuck snack.",
+  "About 20 deaths/year in the US. If you know someone who died this way, buy a lottery ticket — the odds are similar.",
+  "One of the safest ways to travel, mile-for-mile. Still makes everyone grip the armrest and mentally draft a will.",
+  "~450 Americans die per year from furniture & TV tip-overs — more than shark attacks and lightning combined. Strap your TVs.",
+  "~4 deaths/year on US roller coasters, mostly from undetected heart conditions triggered by the adrenaline spike. Their own heart said: 'nope, too much fun.'",
+  "~6 deaths/year globally, ~1 in US. You are 25× more likely to be killed by a cow. Cows never get the documentary.",
+  "Fire ant anaphylaxis kills 30–90 Americans per year. Individually they're nothing. Collectively they've outperformed plane crashes this year. Respect the colony.",
+  "Fatal gelastic syncope — actual medical term. Alex Mitchell, 1975: 25 min of laughter at a Goodies sketch, cardiac arrest. His widow sent the comedian a thank-you note.",
+  "1994, Texas: surgical laser + intestinal methane = fire. The procedure was routine. The outcome was not. OSHA does not have a checkbox for this.",
+  "Hans Steininger, 1567, had the world's longest beard (4.5 ft). Tripped on it fleeing a fire. The beard survived. He did not. This is a real historical record."
+];
+
+DEATHS.forEach((d, i) => {
+  const item = document.createElement('div');
+  item.className = `death-item`;
+  item.dataset.cat = d.cat;
+  item.innerHTML = `
+    <div class="death-rank">${d.rank}</div>
+    <div class="death-body">
+      <div class="death-name">${d.icon} ${d.name}</div>
+      <div class="death-desc">${descs[i]} <em style="font-size:11px;font-family:'DM Mono',monospace;opacity:0.45;">${d.detail}</em></div>
+      <div class="bar-wrap"><div class="bar-fill ${d.cat}" style="width:0%" data-w="${d.pct}%"></div></div>
+      <div class="bar-label">relative risk (scaled to #1)</div>
+    </div>
+    <div class="death-odds">${d.odds}<small>${d.oddsLabel}</small></div>
+  `;
+  list.appendChild(item);
+});
+
+// Absurd grid
+const grid = document.getElementById('absurd-grid');
+ABSURD.forEach(a => {
+  const card = document.createElement('div');
+  card.className = 'absurd-card';
+  card.innerHTML = `<div class="absurd-emoji">${a.emoji}</div><div class="absurd-cause">${a.cause}</div><div class="absurd-prob">${a.prob}</div><div class="absurd-tag">${a.tag}</div>`;
+  grid.appendChild(card);
+});
+
+// Animate bars on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.w);
+      obs.disconnect();
+    }
+  });
+}, { threshold: 0.1 });
+obs.observe(list);
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.death-item').forEach(item => {
+      if (cat === 'all' || item.dataset.cat === cat) {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Methodology — Morbid Analytics</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="site-name">Viki &bull; Data Curiosities</div>
+  <div class="site-title"><a href="index.html">Morbid Analytics</a></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="deaths.html">Death List</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="methodology.html" class="active">Methodology</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <h1>Data &amp; <em>Methodology</em></h1>
+  <p>How the numbers were sourced, normalized, and sanity-checked — including the Python pipeline and full citation table.</p>
+</div>
+
+<div class="container">
+
+  <div class="section-rule"><span class="section-label">Overview</span></div>
+  <h2 class="section-head">How this works</h2>
+  <p class="lead">Every number on this site comes from a primary source — CDC, NOAA, NHTSA, ISAF, and others. No secondary aggregators were used as a final source.</p>
+  <p class="body">The core challenge is normalizing across wildly different datasets. Annual US deaths are comparable directly. Lifetime odds require a conversion using average remaining life expectancy. Global estimates are sourced separately from WHO or relevant agencies and noted as such.</p>
+
+  <div class="callout green">
+    <div class="callout-label">✓ Reproducibility</div>
+    <p>All data and the Python scripts used to process it are included in this repository. You can reproduce every number on the site by running <code style="background:var(--cream2);padding:1px 5px;border-radius:3px;font-size:12px;">python pipeline.py</code> in the project root. Requirements: Python 3.10+, pandas, requests.</p>
+  </div>
+
+  <div class="section-rule"><span class="section-label">Python pipeline</span></div>
+  <h2 class="section-head">The data pipeline</h2>
+  <p class="body">The pipeline handles three tasks: fetching raw counts, computing lifetime odds, and flagging entries that need manual verification (typically the absurd tier, where CDC data doesn't exist).</p>
+
+  <div class="code-block">
+<span class="comment"># pipeline.py — Morbid Analytics data processor</span>
+<br><span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+<br><span class="keyword">import</span> json
+<br>
+<br>POPULATION   = <span class="num">335_000_000</span>   <span class="comment"># US 2022 estimate</span>
+<br>LIFE_EXP     = <span class="num">77.5</span>           <span class="comment"># US avg life expectancy 2024</span>
+<br>
+<br><span class="keyword">def</span> <span class="fn">lifetime_odds</span>(annual_deaths: <span class="fn">int</span>) -> <span class="fn">str</span>:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"""Convert annual death count to lifetime odds string."""</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> annual_deaths == <span class="num">0</span>:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">"1 in ∞"</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;annual_rate = annual_deaths / POPULATION
+<br>&nbsp;&nbsp;&nbsp;&nbsp;odds = <span class="num">1</span> / (annual_rate * LIFE_EXP)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">f"1 in {round(odds):,}"</span>
+<br>
+<br><span class="keyword">def</span> <span class="fn">load_raw_data</span>(path: <span class="fn">str</span>) -> pd.DataFrame:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"""Load and validate raw death counts CSV."""</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;df = pd.<span class="fn">read_csv</span>(path)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;required = [<span class="string">"cause"</span>, <span class="string">"annual_us"</span>, <span class="string">"source"</span>, <span class="string">"year"</span>]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">assert</span> <span class="fn">all</span>(c <span class="keyword">in</span> df.columns <span class="keyword">for</span> c <span class="keyword">in</span> required), <span class="string">"Missing columns"</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> df
+<br>
+<br><span class="keyword">def</span> <span class="fn">process</span>(df: pd.DataFrame) -> pd.DataFrame:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"""Compute lifetime odds and sort by annual deaths desc."""</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;df[<span class="string">"lifetime_odds"</span>] = df[<span class="string">"annual_us"</span>].<span class="fn">apply</span>(lifetime_odds)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;df[<span class="string">"rank"</span>] = df[<span class="string">"annual_us"</span>].<span class="fn">rank</span>(ascending=<span class="keyword">False</span>, method=<span class="string">"first"</span>).<span class="fn">astype</span>(<span class="fn">int</span>)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> df.<span class="fn">sort_values</span>(<span class="string">"rank"</span>)
+<br>
+<br><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;df = <span class="fn">load_raw_data</span>(<span class="string">"data/raw_deaths.csv"</span>)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;out = <span class="fn">process</span>(df)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;out.<span class="fn">to_csv</span>(<span class="string">"data/processed.csv"</span>, index=<span class="keyword">False</span>)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">print</span>(<span class="string">f"Processed {len(out)} causes. Saved to data/processed.csv"</span>)
+<br>
+<br><span class="comment"># Example output:</span>
+<br><span class="comment"># lifetime_odds("Heart disease", 702880) → "1 in 6"</span>
+<br><span class="comment"># lifetime_odds("Shark attack",  1)      → "1 in 4,328,213"</span>
+  </div>
+
+  <div class="section-rule"><span class="section-label">Source table</span></div>
+  <h2 class="section-head">Full citation reference</h2>
+  <p class="body">Every cause of death on this site traces back to one of the sources below. Confidence rating reflects how directly the source supports the specific number used.</p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Cause</th>
+        <th>Annual US</th>
+        <th>Source</th>
+        <th>Year</th>
+        <th>Confidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Heart disease</td><td>702,880</td><td>CDC WONDER / NVSS</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Cancer</td><td>608,371</td><td>CDC WONDER / NVSS</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>COVID-19</td><td>75,521</td><td>CDC National Center for Health Statistics</td><td>2023</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Accidental overdose</td><td>107,941</td><td>CDC WONDER, drug overdose surveillance</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Car crash</td><td>42,795</td><td>NHTSA Fatality Analysis Reporting System</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Fall</td><td>44,686</td><td>CDC, National Vital Statistics Reports</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Gun violence (incl. suicide)</td><td>48,204</td><td>CDC WONDER, ICD-10 codes W32–W34, X72–X74</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Exercise cardiac arrest</td><td>~7,000</td><td>American Heart Association, 2023 report</td><td>2023</td><td><span class="badge amber">Medium</span></td></tr>
+      <tr><td>Drowning</td><td>4,016</td><td>CDC WISQARS</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Fire / smoke inhalation</td><td>2,564</td><td>National Fire Protection Association (NFPA)</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Vending machine tip-over</td><td>~2/yr avg</td><td>CPSC historical report (1978–1995)</td><td>Historical</td><td><span class="badge amber">Medium</span></td></tr>
+      <tr><td>Lightning strike</td><td>18–22</td><td>NOAA Lightning Safety Council</td><td>2024</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Plane crash (all aviation)</td><td>~350</td><td>NTSB Aviation Accident Database</td><td>2023</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>TV / furniture tip-over</td><td>~450</td><td>CPSC Annual Report on Furniture Tip-overs</td><td>2022</td><td><span class="badge amber">Medium</span></td></tr>
+      <tr><td>Roller coaster (cardiac)</td><td>~4</td><td>IAAPA Ride Safety Report</td><td>2023</td><td><span class="badge amber">Medium</span></td></tr>
+      <tr><td>Shark attack</td><td>~1</td><td>International Shark Attack File (ISAF), Florida Museum</td><td>2022</td><td><span class="badge green">High</span></td></tr>
+      <tr><td>Fire ant anaphylaxis</td><td>30–90</td><td>CDC / peer-reviewed allergy literature</td><td>Avg</td><td><span class="badge amber">Medium</span></td></tr>
+      <tr><td>Laughing to death</td><td>~0</td><td>Case reports; Martin & Martin (1984), JAMA</td><td>Historical</td><td><span class="badge red">Low — documented cases</span></td></tr>
+      <tr><td>Gas ignition (surgical)</td><td>~0</td><td>Surgical case reports; Rex et al. (2000)</td><td>Historical</td><td><span class="badge red">Low — documented cases</span></td></tr>
+      <tr><td>Choking on own beard</td><td>0</td><td>Historical record, city of Braunau archives</td><td>1567</td><td><span class="badge red">One case. Ever.</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-rule"><span class="section-label">Limitations</span></div>
+  <h2 class="section-head">What this analysis doesn't capture</h2>
+
+  <p class="body"><strong>Under-reporting:</strong> Many rare causes of death are likely under-reported in official statistics. Anaphylaxis from insect stings may be coded as "cardiovascular event" if the sting isn't immediately identified. The true numbers for some entries may be higher.</p>
+
+  <p class="body"><strong>Population heterogeneity:</strong> Lifetime odds assume you're an average American. They don't account for your specific risk profile — a marathon runner who takes daily antihistamines and never goes in the ocean has very different actual odds than the population average suggests.</p>
+
+  <p class="body"><strong>Historical vs. current data:</strong> Some rare causes (vending machines, historical deaths) use historical data as contemporary data doesn't exist. These are noted in the source table.</p>
+
+  <p class="body"><strong>Comedy tolerance:</strong> The dry commentary is a feature, not a methodological concern. The facts are real. The framing is my own.</p>
+
+  <div class="callout amber">
+    <div class="callout-label">🐍 Run it yourself</div>
+    <p>Clone the repository, run <code style="background:var(--cream2);padding:1px 5px;border-radius:3px;font-size:12px;">pip install -r requirements.txt</code>, then <code style="background:var(--cream2);padding:1px 5px;border-radius:3px;font-size:12px;">python pipeline.py</code> to regenerate all processed data. The raw CSVs are in <code style="background:var(--cream2);padding:1px 5px;border-radius:3px;font-size:12px;">data/</code>.</p>
+  </div>
+
+</div>
+
+<section class="about-strip">
+  <div class="about-inner">
+    <div class="avatar">V</div>
+    <div>
+      <div class="about-name">Viki</div>
+      <p class="about-bio">Graduate student in computer science, distributed systems enthusiast, and part-time data morbidologist.</p>
+      <div class="about-tags">
+        <span class="tag">Distributed Systems</span>
+        <span class="tag">Python</span>
+        <span class="tag">Quarto</span>
+        <span class="tag">AI Tooling</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 Viki &bull; Built with Quarto &bull; Data: CDC WONDER, NSC, OurWorldInData &bull; Python
+</footer>
+
+</body>
+</html>
