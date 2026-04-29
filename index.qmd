@@ -1,0 +1,108 @@
+---
+title: "Morbid Analytics — Viki's Data Curiosities"
+description: "A data-driven investigation into human mortality — ranked, sourced, and occasionally hilarious."
+---
+
+```{=html}
+<header class="masthead">
+  <div class="site-name">Viki &bull; Data Curiosities</div>
+  <div class="site-title"><a href="index.html">Morbid Analytics</a></div>
+  <nav class="main-nav">
+    <a href="index.html" class="active">Home</a>
+    <a href="deaths.html">Death List</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="methodology.html">Methodology</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">A data-driven investigation into human mortality</div>
+  <h1>We're All<br>Going to <em>Die.</em><br>Let's Look at the Data.</h1>
+  <p class="hero-sub">From heart disease to vending machine tip-overs — a ranked, sourced, and occasionally hilarious analysis of how humans stop existing.</p>
+  <div class="hero-meta">By Viki &bull; April 2026 &bull; Data: CDC, NSC, NOAA, IAAPA, ISAF</div>
+</section>
+
+<div class="container">
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num red">702,880</div>
+      <div class="stat-label">Heart disease deaths, US 2022</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num teal">1 in 3.7M</div>
+      <div class="stat-label">Lifetime odds of shark death</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num amber">20</div>
+      <div class="stat-label">Ranked causes explored</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">1</div>
+      <div class="stat-label">Death by own beard, ever</div>
+    </div>
+  </div>
+
+  <div class="section-rule"><span class="section-label">About this site</span></div>
+  <h2 class="section-head">Why Morbid Analytics?</h2>
+  <p class="lead">The human brain is catastrophically bad at estimating risk. We fear plane crashes and shark attacks while ignoring the slow, undramatic, statistically inevitable causes that actually kill us.</p>
+  <p class="body">This site exists to stare mortality in the face with a spreadsheet. Every cause of death is real, every number is sourced, and every entry on the absurd end of the spectrum is a genuine documented case — because the universe, it turns out, has an extraordinary sense of humor.</p>
+  <p class="body">Built as a Quarto website using vanilla CSS and Chart.js — the kind of thing you do when your distributed systems assignment is due and you decide to do something completely different instead.</p>
+
+  <div class="callout amber">
+    <div class="callout-label">🎓 Academic context</div>
+    <p>This site was submitted as a Quarto website assignment for a data science course. The goal: demonstrate markdown, theming, and data visualization skills. The execution: a complete descent into mortality statistics. I regret nothing.</p>
+  </div>
+
+  <div class="section-rule"><span class="section-label">Explore</span></div>
+  <h2 class="section-head">What's on this site</h2>
+
+  <div class="page-cards">
+    <a href="deaths.html" class="page-card">
+      <div class="page-card-icon">💀</div>
+      <div class="page-card-title">The Death List</div>
+      <div class="page-card-desc">All 20 causes ranked from inevitable to historically-documented-once. With actual numbers, odds, and dry commentary.</div>
+      <span class="page-card-link">View ranked list →</span>
+    </a>
+    <a href="analytics.html" class="page-card">
+      <div class="page-card-icon">📊</div>
+      <div class="page-card-title">Analytics</div>
+      <div class="page-card-desc">Charts, comparisons, and the probability spectrum — visualizing how dramatically our fears misalign with reality.</div>
+      <span class="page-card-link">View charts →</span>
+    </a>
+    <a href="methodology.html" class="page-card">
+      <div class="page-card-icon">🐍</div>
+      <div class="page-card-title">Methodology</div>
+      <div class="page-card-desc">How the data was sourced, normalized, and processed. Includes the Python pipeline and source reference table.</div>
+      <span class="page-card-link">View methodology →</span>
+    </a>
+  </div>
+
+  <div class="big-quote">
+    <blockquote>"We worry about the <em>dramatic</em>, but we die from the <em>mundane</em>."</blockquote>
+    <cite>— Hans Rosling, Factfulness</cite>
+  </div>
+
+</div>
+
+<section class="about-strip">
+  <div class="about-inner">
+    <div class="avatar">V</div>
+    <div>
+      <div class="about-name">Viki</div>
+      <p class="about-bio">Graduate student in computer science, distributed systems enthusiast, and part-time data morbidologist. This site is where I publish analyses that are either useful, amusing, or both. Usually both.</p>
+      <div class="about-tags">
+        <span class="tag">Distributed Systems</span>
+        <span class="tag">Data Analysis</span>
+        <span class="tag">Python</span>
+        <span class="tag">Quarto</span>
+        <span class="tag">AI Tooling</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 Viki &bull; Built with Quarto &bull; Data: CDC WONDER, NSC, OurWorldInData &bull; Python
+</footer>
+```
