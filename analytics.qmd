@@ -282,7 +282,11 @@ new Chart(document.getElementById('chart-absurd'), {
     },
     scales: {
       x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 35 } },
-      y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { stepSize: 50 } }
+      y: {
+        title: { display: true, text: 'Annual US deaths (approx.)' },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        ticks: { stepSize: 50 }
+      }
     }
   }
 });
