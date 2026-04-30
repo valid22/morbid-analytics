@@ -1,0 +1,13 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Morbid Analytics"
+
+format:
+  html:
+    theme: none
+    css: css/style.css
+    toc: false
+    page-layout: custom
